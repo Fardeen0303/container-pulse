@@ -66,6 +66,23 @@ container-pulse/
 └── docker-compose.yml
 ```
 
+## Screenshots
+
+### All Containers Running
+![docker ps](screenshots/docker-ps.png)
+
+### Monitor Logs - Self Healing in Action
+![monitor logs](screenshots/monitor-logs.png)
+
+### Prometheus Metrics
+![prometheus](screenshots/prometheus.png)
+
+### Grafana Dashboard
+![grafana](screenshots/grafana.png)
+
+### GitHub Actions CI/CD
+![github actions](screenshots/github-actions.png)
+
 ## Skills Demonstrated
 - Infrastructure automation
 - Container orchestration
