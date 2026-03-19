@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+  flask-app:
+    build: ./app
+    container_name: devops-container
+    ports:
+      - "5000:5000"
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx-container
+    ports:
+      - "8080:80"
+
+  monitor:
+    build: ./monitor
+    container_name: monitor
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./logs:/app/logs
+    env_file:
+      - .env
+    depends_on:
+      - flask-app
+      - nginx
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
