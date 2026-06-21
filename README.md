@@ -21,6 +21,11 @@ Container-Pulse is a production-grade self-healing infrastructure platform that 
 Infrastructure is provisioned automatically on AWS EC2 using Terraform with a single `terraform apply`.
 
 ---
+## 🏗️ Architecture
+
+```
+<img width="1536" height="1024" alt="ChatGPT Image Jun 22, 2026, 03_12_36 AM" src="https://github.com/user-attachments/assets/6d7e72a7-ef41-452b-9928-042d5dbc1827" />
+
 
 ## ✨ Features
 
@@ -289,45 +294,6 @@ terraform destroy
 | `alerts_sent_total` | Counter | Alerts sent per channel |
 | `container_cpu_percent` | Gauge | Live CPU usage % |
 | `container_memory_percent` | Gauge | Live memory usage % |
-
----
-
-## 🏗️ Architecture
-
-```
-                        Container-Pulse v2
-┌─────────────────────────────────────────────────────────────┐
-│                                                             │
-│   ┌──────────────┐    ┌──────────────┐    ┌─────────────┐   │
-│   │ Flask App    │    │ Nginx        │    │ Monitor     │   │
-│   │ :5000        │    │ :8080        │    │ (healer)    │   │
-│   └──────────────┘    └──────────────┘    └───────┤     │   │
-│        monitored workloads              │ detects │     │   │
-│                                         └────────┘     │   │
-│                                              │           │   │
-│                    ┌─────────────────────┼───────────┘   │
-│                    │             auto-restart + alert     │
-│                    │                                      │
-│   ┌──────────────┘    ┌───────────┐   ┌───────────┐   │
-│   │ SQLite DB    │    │ Slack       │   │ Email       │   │
-│   │ incidents    │    │ Alerts      │   │ Alerts      │   │
-│   └──────────────┘    └───────────┘   └───────────┘   │
-│                                                             │
-│   ┌──────────────┐    ┌──────────────┐    ┌───────────┐   │
-│   │ FastAPI      │    │ Prometheus   │    │ Grafana    │   │
-│   │ Dashboard    │    │ :9090        │    │ :3000      │   │
-│   │ :8888        │    │ 7 metrics    │    │ dashboards │   │
-│   └──────────────┘    └──────────────┘    └───────────┘   │
-│                         observability layer                 │
-│                                                             │
-│   ┌──────────────┐    ┌──────────────┐    ┌───────────┐   │
-│   │ Kubernetes   │    │ Terraform    │    │ GitHub     │   │
-│   │ Minikube     │    │ AWS EC2      │    │ Actions CI │   │
-│   │ RBAC         │    │ IaC          │    │ 3 jobs     │   │
-│   └──────────────┘    └──────────────┘    └───────────┘   │
-│                      infrastructure layer                   │
-└─────────────────────────────────────────────────────────────┘
-```
 
 ---
 
