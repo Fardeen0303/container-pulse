@@ -1,12 +1,4 @@
-def test_containers_list():
-    containers = ["devops-container", "nginx-container"]
-    assert isinstance(containers, list)
-    assert len(containers) > 0
-
-def test_retry_limit():
-    retry_limit = 3
-    assert retry_limit >= 1
-
-def test_poll_interval():
-    poll_interval = 20
-    assert poll_interval > 0
+# Tests have been moved to:
+#   tests/test_healer.py    — restart logic, retry, failure handling
+#   tests/test_notifiers.py — Slack, Discord, Email notifier behavior
+#   tests/test_db.py        — SQLite incident recording and querying

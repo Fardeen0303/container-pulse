@@ -1,1 +1,26 @@
+# Environment
 .env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.coverage
+
+# Terraform
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+terraform/*.tfvars
+
+# Logs
+logs/*.log
+logs/*.db
+
+# OS
+.DS_Store
+Thumbs.db
+kubectl
+minikube-linux-amd64

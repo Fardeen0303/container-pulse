@@ -1,59 +1,63 @@
-import docker
-import time
 import logging
 import os
-from slack_sdk.webhook import WebhookClient
-from prometheus_client import start_http_server, Counter, Gauge
+import time
 
-CONTAINERS = ["devops-container", "nginx-container"]
-RETRY_LIMIT = 3
-POLL_INTERVAL = 20
-SLACK_WEBHOOK = os.getenv("SLACK_WEBHOOK", "")
+from prometheus_client import start_http_server
+
+from monitor.db import init_db
+from monitor.metrics import container_up, health_checks_total
+
+CONTAINERS = os.getenv("MONITORED_CONTAINERS", "devops-container,nginx-container").split(",")
+POLL_INTERVAL = int(os.getenv("POLL_INTERVAL", "20"))
+MODE = os.getenv("MODE", "docker")          # "docker" or "kubernetes"
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(message)s",
     handlers=[
         logging.FileHandler("/app/logs/monitor.log"),
-        logging.StreamHandler()
-    ]
+        logging.StreamHandler(),
+    ],
 )
 
-client = docker.from_env()
-restart_counter = Counter("container_restarts_total", "Total restarts", ["container"])
-container_status = Gauge("container_up", "Container status", ["container"])
 
-def send_slack_alert(msg):
-    if SLACK_WEBHOOK:
-        WebhookClient(SLACK_WEBHOOK).send(text=msg)
+def run_docker_monitor():
+    import docker
+    from monitor.healer import collect_resource_stats, restart_container
+    from monitor.notifiers import notify_all
 
-def restart_container(name):
-    for attempt in range(1, RETRY_LIMIT + 1):
-        try:
-            client.containers.get(name).start()
-            logging.info(f"[SUCCESS] {name} restarted on attempt {attempt}")
-            restart_counter.labels(container=name).inc()
-            send_slack_alert(f"✅ {name} restarted successfully")
-            return
-        except Exception as e:
-            logging.warning(f"[RETRY {attempt}] Failed to restart {name}: {e}")
-            time.sleep(5)
-    logging.error(f"[CRITICAL] {name} failed after {RETRY_LIMIT} attempts")
-    send_slack_alert(f"🚨 CRITICAL: {name} failed to restart after {RETRY_LIMIT} attempts")
+    client = docker.from_env()
+    logging.info(f"[Docker] Monitoring: {', '.join(CONTAINERS)}")
 
-def monitor():
-    start_http_server(8000)
-    logging.info(f"Monitoring: {', '.join(CONTAINERS)}")
     while True:
         running = [c.name for c in client.containers.list()]
+        health_checks_total.inc()
+
         for name in CONTAINERS:
             is_up = name in running
-            container_status.labels(container=name).set(1 if is_up else 0)
-            if not is_up:
+            container_up.labels(container=name).set(1 if is_up else 0)
+
+            if is_up:
+                collect_resource_stats(name)
+            else:
                 logging.warning(f"[ALERT] {name} is down. Restarting...")
-                send_slack_alert(f"⚠️ {name} is down. Attempting restart...")
+                notify_all(f"⚠️ {name} is down. Attempting restart...")
                 restart_container(name)
+
         time.sleep(POLL_INTERVAL)
 
+
+def main():
+    init_db()
+    start_http_server(8000)
+    logging.info(f"Container-Pulse starting in [{MODE}] mode")
+
+    if MODE == "kubernetes":
+        from monitor.k8s_healer import run_k8s_monitor
+        run_k8s_monitor()
+    else:
+        run_docker_monitor()
+
+
 if __name__ == "__main__":
-    monitor()
+    main()

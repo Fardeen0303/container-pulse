@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="refresh" content="15" />
+  <title>Container-Pulse Dashboard</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f1117; color: #e0e0e0; padding: 24px; }
+    h1 { font-size: 1.6rem; margin-bottom: 4px; color: #fff; }
+    .subtitle { color: #888; font-size: 0.85rem; margin-bottom: 28px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-bottom: 36px; }
+    .card { background: #1a1d27; border-radius: 10px; padding: 18px; border-left: 4px solid #444; }
+    .card.running { border-color: #22c55e; }
+    .card.exited  { border-color: #ef4444; }
+    .card.missing  { border-color: #f59e0b; }
+    .card.failed   { border-color: #ef4444; }
+    .card.pending  { border-color: #a855f7; }
+    .card.unknown  { border-color: #6b7280; }
+    .card h3 { font-size: 1rem; margin-bottom: 6px; }
+    .badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+    .badge.running { background: #14532d; color: #22c55e; }
+    .badge.exited  { background: #450a0a; color: #ef4444; }
+    .badge.missing  { background: #451a03; color: #f59e0b; }
+    .badge.failed   { background: #450a0a; color: #ef4444; }
+    .badge.pending  { background: #2e1065; color: #a855f7; }
+    .badge.unknown  { background: #1f2937; color: #6b7280; }
+    .mode-badge { font-size: 0.72rem; background: #1e2130; color: #888; padding: 2px 10px; border-radius: 999px; margin-left: 10px; vertical-align: middle; }
+    .card .image { font-size: 0.75rem; color: #666; margin-top: 8px; }
+    section { margin-bottom: 36px; }
+    section h2 { font-size: 1.1rem; margin-bottom: 14px; color: #ccc; border-bottom: 1px solid #2a2d3a; padding-bottom: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th { text-align: left; padding: 10px 14px; background: #1a1d27; color: #888; font-weight: 500; }
+    td { padding: 10px 14px; border-top: 1px solid #1e2130; }
+    tr:hover td { background: #1a1d27; }
+    .event-restarted       { color: #22c55e; }
+    .event-critical_failure { color: #ef4444; }
+    .event-failed          { color: #f59e0b; }
+    .footer { color: #444; font-size: 0.75rem; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <h1>🫀 Container-Pulse <span class="mode-badge">{{ mode | upper }} MODE</span></h1>
+  <p class="subtitle">Auto-refreshes every 15 seconds &nbsp;|&nbsp; Self-healing {{ mode }} monitoring</p>
+
+  <section>
+    <h2>{% if mode == 'kubernetes' %}Pod Status{% else %}Container Status{% endif %}</h2>
+    <div class="grid">
+      {% for c in containers %}
+      <div class="card {{ c.status }}">
+        <h3>{{ c.name }}</h3>
+        {% if mode == 'kubernetes' %}
+          <p style="font-size:0.72rem;color:#666;margin-bottom:6px">ns: {{ c.namespace }}</p>
+        {% endif %}
+        <span class="badge {{ c.status }}">{{ c.status }}</span>
+        <p class="image">{{ c.image }}</p>
+        {% if mode == 'kubernetes' and c.restarts is defined %}
+          <p style="font-size:0.75rem;color:{% if c.restarts >= 5 %}#ef4444{% else %}#666{% endif %};margin-top:6px">↺ {{ c.restarts }} restarts</p>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section>
+    <h2>Restart Counts</h2>
+    <table>
+      <thead><tr><th>Container</th><th>Total Restarts</th></tr></thead>
+      <tbody>
+        {% for r in restart_counts %}
+        <tr><td>{{ r.container }}</td><td>{{ r.count }}</td></tr>
+        {% else %}
+        <tr><td colspan="2" style="color:#555">No restarts recorded yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Recent Incidents</h2>
+    <table>
+      <thead><tr><th>Time (UTC)</th><th>Container</th><th>Event</th><th>Attempt</th></tr></thead>
+      <tbody>
+        {% for i in incidents %}
+        <tr>
+          <td>{{ i.timestamp }}</td>
+          <td>{{ i.container }}</td>
+          <td class="event-{{ i.event }}">{{ i.event }}</td>
+          <td>{{ i.attempt }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" style="color:#555">No incidents recorded yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <p class="footer">Container-Pulse v2 &nbsp;|&nbsp; <a href="/api/incidents" style="color:#555">Incidents API</a> &nbsp;|&nbsp; {% if mode == 'kubernetes' %}<a href="/api/pods" style="color:#555">Pods API</a>{% else %}<a href="/api/containers" style="color:#555">Containers API</a>{% endif %} &nbsp;|&nbsp; <a href="/api/summary" style="color:#555">Summary</a></p>
+</body>
+</html>
