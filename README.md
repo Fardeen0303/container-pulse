@@ -23,7 +23,6 @@ Infrastructure is provisioned automatically on AWS EC2 using Terraform with a si
 ---
 ## 🏗️ Architecture
 
-```
 <img width="1536" height="1024" alt="ChatGPT Image Jun 22, 2026, 03_12_36 AM" src="https://github.com/user-attachments/assets/6d7e72a7-ef41-452b-9928-042d5dbc1827" />
 
 
