@@ -295,31 +295,28 @@ terraform destroy
 ## 📸 Screenshots
 
 ### All Containers Running
-![docker ps](screenshots/docker-ps.png)
+![docker ps](screenshots/1.docker-ps.png)
 
 ### Dashboard — Live Container Status & Incident History
-![dashboard](screenshots/dashboard.png)
+![dashboard](screenshots/2.dashboard.png)
 
 ### Monitor Logs — Self-Healing in Action
-![monitor logs](screenshots/monitor-logs.png)
+![monitor logs](screenshots/3.monitor-logs.png)
 
 ### Kubernetes Pods Running
-![kubernetes pods](screenshots/kubernetes-pods.png)
+![kubernetes pods](screenshots/4.kubernetes-pods.png)
 
 ### Kubernetes Self-Healing in Action
-![kubernetes healing](screenshots/kubernetes-healing.png)
+![kubernetes healing](screenshots/5.kubernetes-healing.png)
 
 ### Prometheus Metrics
-![prometheus](screenshots/prometheus.png)
+![prometheus](screenshots/6.prometheus.png)
 
 ### Grafana Dashboard
-![grafana](screenshots/grafana.png)
+![grafana](screenshots/7.grafana.png)
 
 ### Email Alert
-![email alert](screenshots/email-alert.png)
-
-### GitHub Actions CI/CD
-![github actions](screenshots/github-actions.png)
+![email alert](screenshots/8.email-alert.png)
 
 ---
 
