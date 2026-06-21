@@ -1,4 +1,4 @@
-# 🫀 Container-Pulse v2
+# 🫀 Container-Pulse
 
 > Cloud-native self-healing monitoring platform for Docker containers and Kubernetes workloads — with real-time alerting, observability, incident history, and automated infrastructure provisioning.
 
