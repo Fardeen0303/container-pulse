@@ -36,7 +36,7 @@ Infrastructure is provisioned automatically on AWS EC2 using Terraform with a si
 | 🗄️ Incident Database | SQLite stores every failure, restart, and recovery event |
 | ☸️ Kubernetes Support | Watches pods, detects Failed/Unknown phases, detects CrashLoopBackOff |
 | 🏗️ Terraform IaC | Provisions AWS EC2 + security groups with one command |
-| 🚀 AWS Deployment | Full stack runs on EC2 with Minikube for Kubernetes |
+| 🚀 AWS Ready | Terraform provisions EC2 + Minikube — deploy with `terraform apply` |
 | 💥 Chaos Testing | Shell script kills containers and measures mean recovery time |
 | 📝 Structured Logging | Timestamped logs saved to file |
 
@@ -266,7 +266,7 @@ terraform destroy
 
 ---
 
-## 🔒 CI/CD Pipeline
+## 🔁 CI/CD Pipeline
 
 3 jobs run on every push and pull request:
 
@@ -289,6 +289,45 @@ terraform destroy
 | `alerts_sent_total` | Counter | Alerts sent per channel |
 | `container_cpu_percent` | Gauge | Live CPU usage % |
 | `container_memory_percent` | Gauge | Live memory usage % |
+
+---
+
+## 🏗️ Architecture
+
+```
+                        Container-Pulse v2
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│   ┌──────────────┐    ┌──────────────┐    ┌─────────────┐   │
+│   │ Flask App    │    │ Nginx        │    │ Monitor     │   │
+│   │ :5000        │    │ :8080        │    │ (healer)    │   │
+│   └──────────────┘    └──────────────┘    └───────┤     │   │
+│        monitored workloads              │ detects │     │   │
+│                                         └────────┘     │   │
+│                                              │           │   │
+│                    ┌─────────────────────┼───────────┘   │
+│                    │             auto-restart + alert     │
+│                    │                                      │
+│   ┌──────────────┘    ┌───────────┐   ┌───────────┐   │
+│   │ SQLite DB    │    │ Slack       │   │ Email       │   │
+│   │ incidents    │    │ Alerts      │   │ Alerts      │   │
+│   └──────────────┘    └───────────┘   └───────────┘   │
+│                                                             │
+│   ┌──────────────┐    ┌──────────────┐    ┌───────────┐   │
+│   │ FastAPI      │    │ Prometheus   │    │ Grafana    │   │
+│   │ Dashboard    │    │ :9090        │    │ :3000      │   │
+│   │ :8888        │    │ 7 metrics    │    │ dashboards │   │
+│   └──────────────┘    └──────────────┘    └───────────┘   │
+│                         observability layer                 │
+│                                                             │
+│   ┌──────────────┐    ┌──────────────┐    ┌───────────┐   │
+│   │ Kubernetes   │    │ Terraform    │    │ GitHub     │   │
+│   │ Minikube     │    │ AWS EC2      │    │ Actions CI │   │
+│   │ RBAC         │    │ IaC          │    │ 3 jobs     │   │
+│   └──────────────┘    └──────────────┘    └───────────┘   │
+│                      infrastructure layer                   │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ---
 
